@@ -7,7 +7,7 @@ namespace ConsoleApp01
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("\nics0031-2020f Secure Programming Cem Hasgören\n");
+            Console.WriteLine("\nics0031-2020f Secure Programming Cem Hasgören 184048IVSB\n");
             var userInput = "";
             
             do
@@ -38,7 +38,6 @@ namespace ConsoleApp01
                 }
             } while (userInput != "x");
         }
-
         
         static void Cesar()
         {
@@ -84,6 +83,23 @@ namespace ConsoleApp01
             if (plainText != null)
             {
                 Console.WriteLine($"Length of the text is {plainText.Length}\n");
+                Encoding.Default.GetBytes(plainText);
+                
+                ShowEncoding(plainText, Encoding.Default);
+
+                var encryptedBytes= CesarEncryptString(plainText, (byte) key, Encoding.Default);
+
+                var decryptBase64 = CesarDecryptString(encryptedBytes, (byte) key, Encoding
+                .Default);
+                
+                Console.Write("Encrypted bytes: ");
+                foreach (var encryptedByte in encryptedBytes)
+                {
+                    Console.Write(encryptedByte + " ");
+                }
+                Console.WriteLine("base64: " + System.Convert.ToBase64String(encryptedBytes));
+                
+                Console.WriteLine("byte: " + System.Convert.ToSByte(decryptBase64));
                 
                 /*
                 ShowEncoding(plainText,Encoding.UTF7);
@@ -94,13 +110,70 @@ namespace ConsoleApp01
                 ShowEncoding(plainText,Encoding.Default); //most likely UTF-8
                 */
                 
-                Console.WriteLine("Your cipher text is: dgdfyhghfhjf");
             }
             else
             {
                 Console.WriteLine("Plain text is null!");    
             }
         }
+
+        static byte[] CesarEncryptString(string input, byte shiftAmount, Encoding encoding)
+        {
+            var inputBytes = encoding.GetBytes(input);
+            return (CesarEncrypt(inputBytes, shiftAmount));
+        }
+        static byte[] CesarDecryptString(string ciphertext, byte shiftAmount, Encoding encoding)
+        {
+            var ciphertextBytes = Convert.FromBase64String(ciphertext);
+            byte key = (byte) shiftAmount;
+
+            var plaintextBytes = CesarDecrypt(ciphertextBytes, key);
+            var plaintext = encoding.GetString(plaintextBytes);
+
+            return plaintext;
+            
+        }
+
+        static byte[] CesarEncrypt(byte[] input, byte shiftAmount)
+        {
+            var result = new byte[input.Length];
+            if (shiftAmount == 0)
+            {
+                //no shifting needed, just create copy
+                for (var i = 0; i < input.Length; i++)
+                {
+                    result[i] = input[i];
+                }   
+            }
+            else
+            {
+                for (int i = 0; i < input.Length; i++)
+                {
+                    var newCharValue = input[i] + shiftAmount;
+                    if (newCharValue > byte.MaxValue)
+                    {
+                        newCharValue = newCharValue - byte.MaxValue;
+                    }
+                    result[i] = (byte)newCharValue; // drop the last 3 bytes of int, just use last one
+                }    
+            }
+            return result;
+        }
+        static byte[] CesarDecrypt(byte[] input, byte shiftAmount)
+        {
+            var plaintext = new byte[input.Length];
+            for (int i = 0; i < input.Length; i++)
+            {
+                var newCharValue = (input[i] - shiftAmount) % byte.MaxValue;
+                if (newCharValue == 0)
+                {
+                    newCharValue = byte.MaxValue;
+                }
+                plaintext[i] = (byte) newCharValue;
+            }
+            return plaintext;
+        }
+        
 
         static void Vigenere()
         {
@@ -125,9 +198,7 @@ namespace ConsoleApp01
                     Console.Write(byteValue + " ");
                 }    
             }
-            
             Console.WriteLine();
         }
     }
-    
 }
